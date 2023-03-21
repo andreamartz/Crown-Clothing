@@ -18,6 +18,10 @@ const SignUpForm = () => {
 
   console.log("FORM FIELDS: ", formFields);
 
+  const resetFormFields = () => {
+    setFormFields(defaultFormFields);
+  }
+
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -28,18 +32,22 @@ const SignUpForm = () => {
       return;
     }
     try {
+      // Note that the user will NOT have a value for displayNamedisplayName
       const { user } = await createAuthUserWithEmailAndPassword(
         email, 
         password
       );
 
-      // set the display name to be what the user entered in this form bc createAuthUserWithEmailAndPassword (above) sets it to null)
-      user.displayName = displayName;
-      // need to pass in an object with display
+      // need to pass in an object with the user-entered displayName; if we don't pass that in, displayName will be null
       const userDocRef = await createUserDocumentFromAuth(user, { displayName });
-      console.log("USER: ", user, "USERDOCREF: ", userDocRef);
+      
+      resetFormFields();
     } catch (error) {
-      console.error("User creation encountered an error", error);
+      if (error.code === 'auth/email-already-in-use') {
+        alert('Cannot create user, email already in use');
+      } else {
+        console.error("User creation encountered an error", error);
+      }
     }
   }
 
